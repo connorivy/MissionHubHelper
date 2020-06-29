@@ -1,12 +1,12 @@
 from openpyxl import Workbook
 from openpyxl import load_workbook
+from openpyxl.styles import Color, PatternFill, Font, Border
 import time
 import random
 from selenium import webdriver
 from selenium.webdriver.support import ui
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from oauth2client.service_account import ServiceAccountCredentials
 
 
 def page_is_loaded(driver):
@@ -23,13 +23,22 @@ def normalize_excel_sheet():
     wb = load_workbook(filename = loc)
     ws = wb.active 
 
-    warnings = 0
-    names_list = []
+    # initialize variables
+    redFill = PatternFill(start_color='FFFF0000',
+                   end_color='FFFF0000',
+                   fill_type='solid')
+
+    
+    # delete rows that don't have a phone number
+    for row in ws:
+        if not any(cell.value for cell in row):
+            print('empty row', row[0].row)
+            ws.delete_rows(row[0].row, 1)
 
     # split full name into first and last
     row_count = ws.max_row
     print(row_count)
-    
+
     for row in ws.iter_rows(min_row = 1, min_col = 2, max_col = 2, max_row = row_count):
         for cell in row:
             name = cell.value
@@ -37,69 +46,75 @@ def normalize_excel_sheet():
                 name.strip()
             except:
                 continue
-
+            
+            print('Row number:', row[0].row)
             print("cell value", cell.value)
 
             spaces = 0
             for char in name:
-                if char == '':
+                if char == ' ':
                     spaces += 1
 
-            if spaces == 0:
-                cell.offset(0,1).value
-                sheet.write(row, 2, name)
+            if cell.offset(0,3).value == None:
+                cell.fill = redFill
+                cell.offset(0,-1).fill = redFill
+                cell.offset(0,1).fill = redFill
+                cell.offset(0,2).fill = redFill
+                cell.offset(0,3).fill = redFill
+                cell.offset(0,4).fill = redFill
 
-            if spaces == 1:
+            if spaces == 0:
+                cell.offset(0,1).value = name
+
+            elif spaces == 1:
                 first, last = name.split()
-                sheet.write(row, 2, first)
-                sheet.write(row, 3, last)
+                cell.offset(0,1).value = first
+                cell.offset(0,2).value = last
 
             elif spaces == 2:
                 first, middle, last = name.split()
-                sheet.write(row, 2, first + " " + middle)
-                sheet.write(row, 3, last)
+                cell.offset(0,1).value = first + " " + middle
+                cell.offset(0,2).value = last
 
             else:
-                cell(row, 1).fill = PatternFill("solid", fgColor="DDDDDD")
+                cell.fill = redFill
+                cell.offset(0,-1).fill = redFill
+                cell.offset(0,1).fill = redFill
+                cell.offset(0,2).fill = redFill
+                cell.offset(0,3).fill = redFill
+                cell.offset(0,4).fill = redFill
+                print('This name did NOT work', name)
 
-    print(names_list)
+    # format phone numbers to exclude special characters
+    for row in ws.iter_rows(min_row = 2, min_col = 5, max_col = 5, max_row = row_count):
+        for cell in row:
+            number = cell.value
+            try:
+                number.strip()
+            except:
+                continue
+            
+            # remove anything that isn't a number from the string
+            formatted_num = ''
+            for char in number:
+                if char.isdigit():
+                    formatted_num += str(char)
 
+            print('formated num', formatted_num)
 
-def get_contacts_excel():
-    # Reading an excel file using Python 
-    import xlrd 
+            # if not 10 numbers, flag that cell
+            if len(formatted_num) != 10:
+                cell.fill = redFill
+                cell.offset(0,-1).fill = redFill
+                cell.offset(0,-2).fill = redFill
+                cell.offset(0,-3).fill = redFill
+                cell.offset(0,-4).fill = redFill
+                cell.offset(0,1).fill = redFill
+                print('This number did not work', number)
+            else:
+                cell.offset(0,1).value = formatted_num
 
-    # Give the location of the file 
-    loc = ("./contacts.xlsx") 
-
-    # To open Workbook 
-    wb = xlrd.open_workbook(loc) 
-    sheet = wb.sheet_by_index(0) 
-
-    warnings = 0
-    names_list = []
-
-    # split full name into first and last
-    for col in range(1,sheet.ncols): 
-        name = worksheet.cell(1, col).value
-        names_list.append(name)
-
-        if name == "":
-            warnings += 1
-        if warnings >= 5:
-            break
-
-    print(names)
-    
-    print(sheet.nrows)
-
-    for row in range(sheet.nrows):
-        for col in range(3):
-            small_list.append(sheet.cell_value(row, col))
-        big_list.append(small_list)
-        small_list = []
-        
-    return big_list
+    wb.save(filename = './contacts_formatted.xlsx')
 
 def login_to_missionhub(driver, wait, main):
     time.sleep(1)
