@@ -28,6 +28,10 @@ def normalize_excel_sheet():
                    end_color='FFFF0000',
                    fill_type='solid')
 
+    lightredFill = PatternFill(start_color='ffcccb',
+                   end_color='ffcccb',
+                   fill_type='solid')
+
     
     # delete rows that don't have a phone number
     for row in ws:
@@ -39,7 +43,7 @@ def normalize_excel_sheet():
     row_count = ws.max_row
     print(row_count)
 
-    for row in ws.iter_rows(min_row = 1, min_col = 2, max_col = 2, max_row = row_count):
+    for row in ws.iter_rows(min_row = 2, min_col = 1, max_col = 1, max_row = row_count):
         for cell in row:
             name = cell.value
             try:
@@ -55,38 +59,41 @@ def normalize_excel_sheet():
                 if char == ' ':
                     spaces += 1
 
-            if cell.offset(0,3).value == None:
-                cell.fill = redFill
-                cell.offset(0,-1).fill = redFill
+            # if no phone number
+            if cell.offset(0,1).value == None:
+                cell.fill = lightredFill
                 cell.offset(0,1).fill = redFill
-                cell.offset(0,2).fill = redFill
-                cell.offset(0,3).fill = redFill
-                cell.offset(0,4).fill = redFill
+                cell.offset(0,2).fill = lightredFill
+                cell.offset(0,3).fill = lightredFill
+                cell.offset(0,4).fill = lightredFill
+                cell.offset(0,5).fill = lightredFill
+                cell.offset(0,6).fill = lightredFill
 
             if spaces == 0:
-                cell.offset(0,1).value = name
+                cell.offset(0,3).value = name
 
             elif spaces == 1:
                 first, last = name.split()
-                cell.offset(0,1).value = first
-                cell.offset(0,2).value = last
+                cell.offset(0,3).value = first
+                cell.offset(0,4).value = last
 
             elif spaces == 2:
                 first, middle, last = name.split()
-                cell.offset(0,1).value = first + " " + middle
-                cell.offset(0,2).value = last
+                cell.offset(0,3).value = first + " " + middle
+                cell.offset(0,4).value = last
 
             else:
                 cell.fill = redFill
-                cell.offset(0,-1).fill = redFill
-                cell.offset(0,1).fill = redFill
-                cell.offset(0,2).fill = redFill
-                cell.offset(0,3).fill = redFill
-                cell.offset(0,4).fill = redFill
+                cell.offset(0,1).fill = lightredFill
+                cell.offset(0,2).fill = lightredFill
+                cell.offset(0,3).fill = lightredFill
+                cell.offset(0,4).fill = lightredFill
+                cell.offset(0,5).fill = lightredFill
+                cell.offset(0,6).fill = lightredFill
                 print('This name did NOT work', name)
 
     # format phone numbers to exclude special characters
-    for row in ws.iter_rows(min_row = 2, min_col = 5, max_col = 5, max_row = row_count):
+    for row in ws.iter_rows(min_row = 2, min_col = 2, max_col = 2, max_row = row_count):
         for cell in row:
             number = cell.value
             try:
@@ -105,16 +112,58 @@ def normalize_excel_sheet():
             # if not 10 numbers, flag that cell
             if len(formatted_num) != 10:
                 cell.fill = redFill
-                cell.offset(0,-1).fill = redFill
-                cell.offset(0,-2).fill = redFill
-                cell.offset(0,-3).fill = redFill
-                cell.offset(0,-4).fill = redFill
-                cell.offset(0,1).fill = redFill
+                cell.offset(0,-1).fill = lightredFill
+                cell.offset(0,1).fill = lightredFill
+                cell.offset(0,2).fill = lightredFill
+                cell.offset(0,3).fill = lightredFill
+                cell.offset(0,4).fill = lightredFill
+                cell.offset(0,5).fill = lightredFill
+
                 print('This number did not work', number)
             else:
-                cell.offset(0,1).value = formatted_num
+                cell.offset(0,4).value = formatted_num
+
+    for row in ws.iter_rows(min_row = 2, min_col = 3, max_col = 3, max_row = row_count):
+        for cell in row:
+            gender = str(cell.value)
+            print('gender', gender, gender.lower())
+
+        if gender.lower() == 'male' or gender.lower() == 'm' or gender.lower() == 'boy' or gender.lower() == 'guy':
+            cell.offset(0,4).value = 'male'
+
+        elif gender.lower() == 'female' or gender.lower() == 'f' or gender.lower() == 'girl' or gender.lower() == 'gal':
+            cell.offset(0,4).value = 'female'
+
+        elif cell.offset(0, -1).value != None and gender.lower() == 'none':
+            cell.fill = redFill
+            cell.offset(0,-1).fill = lightredFill
+            cell.offset(0,-2).fill = lightredFill
+            cell.offset(0,1).fill = lightredFill
+            cell.offset(0,2).fill = lightredFill
+            cell.offset(0,3).fill = lightredFill
+            cell.offset(0,4).fill = lightredFill
+
+        elif cell.offset(0, -1).value == None and gender.lower() == 'none':
+            continue
+
+        else:
+            cell.offset(0,4).value = 'other'
 
     wb.save(filename = './contacts_formatted.xlsx')
+
+def get_contact_list():
+    loc = ('./contacts_formatted.xlsx') 
+
+    # open Workbook 
+    wb = load_workbook(filename = loc)
+    ws = wb.active 
+
+    row_count = ws.max_row
+    print(row_count)
+
+    for row in ws.iter_rows(min_row = 2, min_col = 3, max_col = 5, max_row = row_count):
+        for cell in row:
+            name = cell.value
 
 def login_to_missionhub(driver, wait, main):
     time.sleep(1)
@@ -182,6 +231,25 @@ def sort_contacts(driver, wait, all_contacts):
             except:
                 time.sleep(2)
 
+def close_blank_page(driver, wait, link):
+    # open webpage
+    driver.get(link)
+    wait.until(page_is_loaded)
+
+    # close the blank page that opens default with selenium and assign a main window 
+    windows = driver.window_handles
+    print(windows)
+    for window in windows:
+        driver.switch_to.window(window)
+        if len(driver.find_elements_by_css_selector("*")) >= 10:
+            main_window = window
+        else:
+            driver.switch_to.window(window)
+            driver.close()
+    driver.switch_to.window(main_window)
+
+    return main_window
+
 def main():
     
     # chromedriver = "chromedriver.exe"
@@ -189,29 +257,29 @@ def main():
     # wait = ui.WebDriverWait(driver, 10)
     # link = 'https://get.missionhub.com/'
 
-    # driver.get(link)
-    # wait.until(page_is_loaded)
+    # # driver.get(link)
+    # # wait.until(page_is_loaded)
 
-    # # close the blank page that opens default with selenium and assign a main window 
-    # windows = driver.window_handles
-    # print(windows)
-    # for window in windows:
-    #     driver.switch_to.window(window)
-    #     if len(driver.find_elements_by_css_selector("*")) >= 10:
-    #         main_window = window
-    #     else:
-    #         driver.switch_to.window(window)
-    #         driver.close()
-    # driver.switch_to.window(main_window)
+    # # # close the blank page that opens default with selenium and assign a main window 
+    # # windows = driver.window_handles
+    # # print(windows)
+    # # for window in windows:
+    # #     driver.switch_to.window(window)
+    # #     if len(driver.find_elements_by_css_selector("*")) >= 10:
+    # #         main_window = window
+    # #     else:
+    # #         driver.switch_to.window(window)
+    # #         driver.close()
+    # # driver.switch_to.window(main_window)
+
+    # main_window = close_blank_page(driver, wait, link)
     
-    # # info = get_user_info()
-    # # import_contacts(info)
-    # all_contacts = get_contacts_excel()
     # login_to_missionhub(driver, wait, main_window)
-    # sort_contacts(driver, wait, all_contacts)
-    # time.sleep(60)
+    # # sort_contacts(driver, wait, all_contacts)
+    # # time.sleep(60)
 
     normalize_excel_sheet()
+    # contact_list = get_contact_list()
 
 
 if __name__ == "__main__":
