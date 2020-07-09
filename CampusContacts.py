@@ -14,9 +14,57 @@ from selenium.webdriver.common.action_chains import ActionChains
 import sys
 import datetime
 import copy
+import base64
+from getpass import getpass
 
 global first_contact
 
+def retrieve_login_info():
+    login_info = read_in_login_info()
+
+    if login_info[1] == '' or login_info[3] == '' or login_info[5] == '':
+        reset_login_info()
+        login_info = read_in_login_info()
+    
+    login_info[1] = base64.b64decode(login_info[1].encode("utf-8")).decode("utf-8")
+    login_info[3] = base64.b64decode(login_info[3].encode("utf-8")).decode("utf-8")
+    login_info[5] = base64.b64decode(login_info[5].encode("utf-8")).decode("utf-8")
+
+    print('login info', login_info)
+    return login_info
+
+def read_in_login_info():
+    with open('./supporting_files/login_info.txt') as f:
+        temp_info = f.readlines()
+    f.close()
+
+    # split based on the ':' character
+    temp_info = [x.split(':') for x in temp_info]
+
+    login_info = []
+    # remove whitespace and /n
+    for x in temp_info:
+        for y in x:
+            login_info.append(y.strip())
+
+    return login_info
+
+def reset_login_info():
+    login_info = ['email or facebook', '', 'username', '', 'password', '']
+
+    while login_info[1].lower() != 'f' and login_info[1].lower() != 'e':
+        login_info[1] = input('\n\n\n\n\nLogin via email or Facebook? [E/F]     ')
+    
+    login_info[3] = input('Please input your username:     ')
+    login_info[5] = getpass('Please input your password:     ')
+
+    file_info = ['','','']
+    file_info[0] = "email or facebook:" + base64.b64encode(login_info[1].encode("utf-8")).decode("utf-8") + "\n"
+    file_info[1] = "username:" + base64.b64encode(login_info[3].encode("utf-8")).decode("utf-8") + "\n"
+    file_info[2] = "password:" + base64.b64encode(login_info[5].encode("utf-8")).decode("utf-8")
+    with open('./supporting_files/login_info.txt', 'w') as f:
+        f.writelines(file_info)
+    f.close()
 
 def page_is_loaded(driver):
     return driver.find_element_by_tag_name("body") != None
@@ -41,17 +89,35 @@ def close_blank_page(driver, wait, link):
 
 def login_to_missionhub(driver, wait, main):
     time.sleep(1)
+
+    # returns login info in the order ['text', 'f or e', 'text', 'username', 'text', 'password']
+    login_info = retrieve_login_info()
+
+    print('login info', login_info)
+
+    if login_info[1].lower() == 'f':
+        print('facebook')
+        # sign into facebook btn 
+        driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[2]').click()
+        wait.until(page_is_loaded)
+        # switch to newly opened window
+        windows = driver.window_handles
+        driver.switch_to.window(windows[-1])
+        # type login info into fb
+        driver.find_element_by_xpath('//*[@id="email"]').send_keys(login_info[3])
+        driver.find_element_by_xpath('//*[@id="pass"]').send_keys(login_info[5])
+        driver.find_element_by_xpath('//*[@id="u_0_0"]').click()
     
-    # sign into facebook
-    driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[2]').click()
-    wait.until(page_is_loaded)
-    # switch to newly opened window
-    windows = driver.window_handles
-    driver.switch_to.window(windows[-1])
-    # type login info into fb
-    driver.find_element_by_xpath('//*[@id="email"]').send_keys('connorivy15@gmail.com')
-    driver.find_element_by_xpath('//*[@id="pass"]').send_keys('September15!')
-    driver.find_element_by_xpath('//*[@id="u_0_0"]').click()
+    else:
+        print('email')
+        # sign in with email btn
+        driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[1]').click()
+        wait.until(page_is_loaded)
+
+        # type login info
+        driver.find_element_by_xpath('//*[@id="username"]').send_keys(login_info[3])
+        driver.find_element_by_xpath('//*[@id="password"]').send_keys(login_info[5])
+        driver.find_element_by_xpath('//*[@id="login_form"]/div[3]/button')
 
     driver.switch_to.window(main)
     wait.until(page_is_loaded)
@@ -91,7 +157,6 @@ def add_new_contact(driver, wait, contact_info, user_labels):
             driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[1]/input').click()
         except:
             print('Trouble clicking the gender option for ', contact_info[0], ' ', contact_info[1])
-        time.sleep(2)
     
     # female
     elif contact_info[3] == 'female':
@@ -111,18 +176,16 @@ def add_new_contact(driver, wait, contact_info, user_labels):
     driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[1]/div[1]/div[1]/ng-md-icon').click()
     availible_labels = driver.find_element_by_xpath('//*[@id="modal-body"]/multiselect-list/ul')
 
-    a = datetime.datetime.now()
+    # parse through list of current labels, add label if it exists
     list_elements = availible_labels.find_elements_by_xpath('.//*')
     for child in range (0,len(list_elements),3):  
         if list_elements[child].text.lower() in user_labels:
             user_labels_copy.remove(list_elements[child].text.lower())
             list_elements[child].find_element_by_css_selector('span[class=ng-binding]').click()
 
-    b = datetime.datetime.now()
-    print('time', b-a)
 
     # if this is the first contact, then check if the label was added
-    # if not, the create a new label and then call the function again with the same contact info
+    # if it wasn't added then create a new label and then call the function again with the same contact info
     if first_contact:
         first_contact = False
         if user_labels_copy != []:
@@ -154,7 +217,7 @@ def add_labels_to_mh(driver, wait, user_labels):
     driver.find_element_by_xpath('/html/body/div[1]/div/div/div/div[3]/button[2]').click()
 
     # click on 'cru @ the university of texas'
-    driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[1]/h2').click()
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[1]/h2'))
     wait.until(page_is_loaded)
 
     # hover over the tools dropdown menu
@@ -178,10 +241,18 @@ def add_labels_to_mh(driver, wait, user_labels):
     driver.get('https://campuscontacts.cru.org/people')
     wait.until(page_is_loaded)
 
+def try_to_click(driver, xpath):
+    try:
+        driver.find_element_by_xpath(xpath).click()
+    except:
+        time.sleep(3)
+        driver.find_element_by_xpath(xpath).click()
+
+
 def main():
     global first_contact
     
-    chromedriver = "chromedriver.exe"
+    chromedriver = "supporting_files/chromedriver.exe"
     driver = webdriver.Chrome(chromedriver)
     driver.implicitly_wait(10)
     wait = ui.WebDriverWait(driver, 10)
@@ -199,8 +270,9 @@ def main():
         add_new_contact(driver, wait, contact, labels)
 
     print('all done :)')
-    time.sleep(60)
+    time.sleep(5)
 
 
 if __name__ == "__main__":
     main()
+    # retrieve_login_info()

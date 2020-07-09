@@ -1,10 +1,12 @@
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.styles import Color, PatternFill, Font, Border
+import time
+import sys
 
 def normalize_excel_sheet():
     # Give the location of the file 
-    loc = ("./contacts.xlsx") 
+    loc = ("./supporting_files/contacts.xlsx") 
 
     # To open Workbook 
     wb = load_workbook(filename = loc)
@@ -129,10 +131,10 @@ def normalize_excel_sheet():
         else:
             cell.offset(0,4).value = 'other'
 
-    wb.save(filename = './contacts_formatted.xlsx')
+    wb.save(filename = './supporting_files/contacts_formatted.xlsx')
 
 def get_contact_list():
-    loc = ('./contacts_formatted.xlsx') 
+    loc = ('./supporting_files/contacts_formatted.xlsx') 
 
     # open Workbook 
     wb = load_workbook(filename = loc)
@@ -158,7 +160,7 @@ def get_contact_list():
 def find_labels():
     ask = False
 
-    with open('./labels.txt') as f:
+    with open('./supporting_files/labels.txt') as f:
         labels = f.readlines()
 
     # remove whitespace characters like `\n` at the end of each line
