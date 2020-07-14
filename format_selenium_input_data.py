@@ -185,8 +185,9 @@ def find_labels():
 
 def ask_to_follow_convention(x):
     cont = 'change me'
+    print('\n\n\n')
     while cont.lower() != 'y' and cont.lower() != 'n':
-        cont = input('\n\n\n\nThe item "' + x + '" in the "labels.txt" file does NOT meet the established naming convention for labels (found in labels_convention). Would you like to continue anyways? (y/n)       ')
+        cont = input('\nThe item "' + x + '" in the "labels.txt" file does NOT meet the established naming convention for labels (found in supporting_files/labels_convention). Would you like to continue anyways? (y/n)       ')
     if cont.lower() == 'n':
         print('\n\nThanks for keeping missionhub organized ;)')
         time.sleep(1)
@@ -194,7 +195,6 @@ def ask_to_follow_convention(x):
     else:
         sure = 'change me'
         while sure.lower() != 'y' and sure.lower() != 'n':
-            print('sure', sure)
             sure = input('\n\nThis may result in missionhub becoming unorganized. Are you sure you want to continue? (y/n)        ')
         if sure.lower() == 'n':
             print('\n\nThanks for keeping missionhub organized ;)')

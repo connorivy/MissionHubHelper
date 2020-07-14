@@ -17,7 +17,7 @@ import copy
 import base64
 from getpass import getpass
 
-global first_contact
+first_contact = True
 
 def retrieve_login_info():
     login_info = read_in_login_info()
@@ -30,7 +30,6 @@ def retrieve_login_info():
     login_info[3] = base64.b64decode(login_info[3].encode("utf-8")).decode("utf-8")
     login_info[5] = base64.b64decode(login_info[5].encode("utf-8")).decode("utf-8")
 
-    print('login info', login_info)
     return login_info
 
 def read_in_login_info():
@@ -52,8 +51,9 @@ def read_in_login_info():
 def reset_login_info():
     login_info = ['email or facebook', '', 'username', '', 'password', '']
 
+    print('\n\n\n\n')
     while login_info[1].lower() != 'f' and login_info[1].lower() != 'e':
-        login_info[1] = input('\n\n\n\n\nLogin via email or Facebook? [E/F]     ')
+        login_info[1] = input('\nLogin via email or Facebook? [E/F]     ')
     
     login_info[3] = input('Please input your username:     ')
     login_info[5] = getpass('Please input your password:     ')
@@ -93,31 +93,29 @@ def login_to_missionhub(driver, wait, main):
     # returns login info in the order ['text', 'f or e', 'text', 'username', 'text', 'password']
     login_info = retrieve_login_info()
 
-    print('login info', login_info)
-
     if login_info[1].lower() == 'f':
         print('facebook')
         # sign into facebook btn 
-        driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[2]').click()
+        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[2]')
         wait.until(page_is_loaded)
         # switch to newly opened window
         windows = driver.window_handles
         driver.switch_to.window(windows[-1])
         # type login info into fb
-        driver.find_element_by_xpath('//*[@id="email"]').send_keys(login_info[3])
-        driver.find_element_by_xpath('//*[@id="pass"]').send_keys(login_info[5])
-        driver.find_element_by_xpath('//*[@id="u_0_0"]').click()
+        try_to_send_keys(driver, '//*[@id="email"]', login_info[3])
+        try_to_send_keys(driver, '//*[@id="pass"]', login_info[5])
+        try_to_click(driver, '//*[@id="u_0_0"]')
     
     else:
         print('email')
         # sign in with email btn
-        driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[1]').click()
+        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[1]')
         wait.until(page_is_loaded)
 
         # type login info
-        driver.find_element_by_xpath('//*[@id="username"]').send_keys(login_info[3])
-        driver.find_element_by_xpath('//*[@id="password"]').send_keys(login_info[5])
-        driver.find_element_by_xpath('//*[@id="login_form"]/div[3]/button')
+        try_to_send_keys(driver, '//*[@id="username"]', login_info[3])
+        try_to_send_keys(driver, '//*[@id="password"]', login_info[5])
+        try_to_click(driver, '//*[@id="login_form"]/div[3]/button')
 
     driver.switch_to.window(main)
     wait.until(page_is_loaded)
@@ -131,49 +129,37 @@ def add_new_contact(driver, wait, contact_info, user_labels):
     time.sleep(2)
 
     # add person btn
-    try:
-        driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[2]/ng-md-icon[1]').click()
-    except:
-        time.sleep(4)
-        driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[2]/ng-md-icon[1]').click()
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[2]/ng-md-icon[1]')
     wait.until(page_is_loaded)
 
     if contact_info[0] != None:
-        driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input').send_keys(contact_info[0])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input', contact_info[0])
     if contact_info[1] != None:
-        driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input').send_keys(contact_info[1])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input', contact_info[1])
     if contact_info[2] != None:
-        driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[5]/div/label/div[2]/input').send_keys(contact_info[2])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[5]/div/label/div[2]/input', contact_info[2])
 
     # unassign the contact to yourself by default
-    try:
-        driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[3]/label/assigned-people-select/div/div[1]/span/span/span/span[1]').click()
-    except:
-        print("Expect to find someone preassigned to", contact_info[0], ' ', contact_info[1], " but didn't")
+    try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[3]/label/assigned-people-select/div/div[1]/span/span/span/span[1]')
+
+    # click out of the name field
+    try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]')
 
     # male 
     if contact_info[3] == 'male':
-        try:
-            driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[1]/input').click()
-        except:
-            print('Trouble clicking the gender option for ', contact_info[0], ' ', contact_info[1])
+        try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[1]/input')
     
     # female
     elif contact_info[3] == 'female':
-        try:
-            driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[2]/input').click()
-        except:
-            print('Trouble clicking the gender option for ', contact_info[0], ' ', contact_info[1])
+        try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[2]/input')
     
     # other
     elif contact_info[3] == 'other':
-        try:
-            driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[3]/input').click()
-        except:
-            print('Trouble clicking the gender option for ', contact_info[0], ' ', contact_info[1])
+        try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[3]/input')
 
+    time.sleep(3)
     # add label button
-    driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[1]/div[1]/div[1]/ng-md-icon').click()
+    try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[1]/div[1]/div[1]/ng-md-icon')
     availible_labels = driver.find_element_by_xpath('//*[@id="modal-body"]/multiselect-list/ul')
 
     # parse through list of current labels, add label if it exists
@@ -193,49 +179,49 @@ def add_new_contact(driver, wait, contact_info, user_labels):
             add_new_contact(driver, wait, contact_info, user_labels)
         else:
             # the OK btn
-            driver.find_element_by_xpath('/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span').click()
+            try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
 
             # save btn
-            driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button').click()
+            try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
             wait.until(page_is_loaded)
     else:
         # the OK btn
-        driver.find_element_by_xpath('/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span').click()
+        try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
 
         # save btn
-        driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button').click()
+        try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
         wait.until(page_is_loaded)
 
 def add_labels_to_mh(driver, wait, user_labels):
     # the OK btn
-    driver.find_element_by_xpath('/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span').click()
+    try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
 
     # x at the top right
-    driver.find_element_by_xpath('/html/body/div[1]/div/div/person-page/async-content/div/header/div[2]/div[1]/a').click()
+    try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/header/div[2]/div[1]/a')
 
     # ok btn on the are you sure page
-    driver.find_element_by_xpath('/html/body/div[1]/div/div/div/div[3]/button[2]').click()
+    try_to_click(driver, '/html/body/div[1]/div/div/div/div[3]/button[2]')
 
     # click on 'cru @ the university of texas'
-    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[1]/h2'))
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[1]/h2')
     wait.until(page_is_loaded)
 
     # hover over the tools dropdown menu
-    menu = driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[7]/div')
+    menu = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[7]/div')
     ActionChains(driver).move_to_element(menu).perform()
 
     # click on 'manage labels'
-    driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[7]/div/ul/li[3]/a').click()
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[7]/div/ul/li[3]/a')
     
     # click the plus btn to add label
-    driver.find_element_by_xpath('/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-labels/div[1]/div[2]/icon-button/ng-md-icon').click()
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-labels/div[1]/div[2]/icon-button/ng-md-icon')
 
     # type new label in box for each element left in user labels
     for x in user_labels:
-        driver.find_element_by_xpath('//*[@id="modal-body"]/div/label/input').send_keys(x)
+        try_to_send_keys(driver, '//*[@id="modal-body"]/div/label/input', x)
 
     # click the okay label
-    driver.find_element_by_xpath('/html/body/div[1]/div/div/edit-label/div[3]/button[2]').click()
+    try_to_click(driver, '/html/body/div[1]/div/div/edit-label/div[3]/button[2]')
 
     # go back to the people tab
     driver.get('https://campuscontacts.cru.org/people')
@@ -247,6 +233,22 @@ def try_to_click(driver, xpath):
     except:
         time.sleep(3)
         driver.find_element_by_xpath(xpath).click()
+
+def try_to_send_keys(driver, xpath, keys):
+    try:
+        driver.find_element_by_xpath(xpath).send_keys(keys)
+    except:
+        time.sleep(3)
+        driver.find_element_by_xpath(xpath).send_keys(keys)
+
+def try_to_find_element(driver, xpath):
+    try:
+        element = driver.find_element_by_xpath(xpath)
+    except:
+        time.sleep(3)
+        element = driver.find_element_by_xpath(xpath)
+
+    return element
 
 
 def main():
@@ -264,8 +266,6 @@ def main():
     main_window = close_blank_page(driver, wait, link)
     login_to_missionhub(driver, wait, main_window)
 
-    first_contact = True
-
     for contact in contact_list:
         add_new_contact(driver, wait, contact, labels)
 
@@ -275,4 +275,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # retrieve_login_info()
