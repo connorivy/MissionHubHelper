@@ -13,6 +13,10 @@ def normalize_excel_sheet():
     ws = wb.active 
 
     # initialize variables
+    white = PatternFill(start_color='FFFFFF',
+                   end_color='FFFFFF',
+                   fill_type='solid')
+
     redFill = PatternFill(start_color='FFFF0000',
                    end_color='FFFF0000',
                    fill_type='solid')
@@ -33,6 +37,7 @@ def normalize_excel_sheet():
 
     for row in ws.iter_rows(min_row = 2, min_col = 1, max_col = 1, max_row = row_count):
         for cell in row:
+            cell.fill = white
             name = cell.value
             try:
                 name.strip()
@@ -130,10 +135,10 @@ def normalize_excel_sheet():
         else:
             cell.offset(0,4).value = 'other'
 
-    wb.save(filename = './supporting_files/contacts_formatted.xlsx')
+    wb.save(filename = './supporting_files/contacts_formatted_do_not_edit.xlsx')
 
 def get_contact_list():
-    loc = ('./supporting_files/contacts_formatted.xlsx') 
+    loc = ('./supporting_files/contacts_formatted_do_not_edit.xlsx') 
 
     # open Workbook 
     wb = load_workbook(filename = loc)
