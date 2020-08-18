@@ -4,6 +4,7 @@ from format_selenium_input_data import find_labels
 import time
 import random
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -18,6 +19,17 @@ import base64
 from getpass import getpass
 
 first_contact = True
+
+def is_headless():
+    headless = 'change me'
+    print('\n\n\n')
+    while headless.lower() != 'y' and headless.lower() != 'n':
+        headless = input('Would you like to run a headless browser? (y/n)     ')
+    
+    if headless == 'y':
+        return True
+    else:
+        return False
 
 def retrieve_login_info():
     login_info = read_in_login_info()
@@ -94,7 +106,6 @@ def login_to_missionhub(driver, wait, main):
     login_info = retrieve_login_info()
 
     if login_info[1].lower() == 'f':
-        print('facebook')
         # sign into facebook btn 
         try_to_click(driver, '/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[2]')
         wait.until(page_is_loaded)
@@ -107,7 +118,6 @@ def login_to_missionhub(driver, wait, main):
         try_to_click(driver, '//*[@id="u_0_0"]')
     
     else:
-        print('email')
         # sign in with email btn
         try_to_click(driver, '/html/body/ui-view/app/section/ui-view/sign-in/div/div[3]/a[1]')
         wait.until(page_is_loaded)
@@ -122,25 +132,39 @@ def login_to_missionhub(driver, wait, main):
     
     time.sleep(1)
 
+    # Cru at university of Texas
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[1]/h2')
+
+    # contacts 
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[4]/span')
+
 def add_new_contact(driver, wait, contact_info, user_labels):
     global first_contact
     
-    user_labels_copy = copy.copy(user_labels)
-    time.sleep(2)
-
     # add person btn
-    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[2]/ng-md-icon[1]')
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[1]/div/div[1]/div[2]/icon-button')
     wait.until(page_is_loaded)
 
+    fill_in_contact(driver, wait, contact_info, user_labels)
+
+    assign_gender(driver, wait, contact_info)
+
+    textbox = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input')
+    textbox.clear()
+
+    print(contact_info[0], contact_info[1], 'added successfully')
+    
+def fill_in_contact(driver, wait, contact_info, user_labels):
+    global first_contact
+    user_labels_copy = copy.copy(user_labels)
+
+    # fill in first, last, and phone
     if contact_info[0] != None:
         try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input', contact_info[0])
     if contact_info[1] != None:
         try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input', contact_info[1])
     if contact_info[2] != None:
         try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[5]/div/label/div[2]/input', contact_info[2])
-
-    # unassign the contact to yourself by default
-    try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[3]/label/assigned-people-select/div/div[1]/span/span/span/span[1]')
 
     # click out of the name field
     try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]')
@@ -168,7 +192,6 @@ def add_new_contact(driver, wait, contact_info, user_labels):
             user_labels_copy.remove(list_elements[child].text.lower())
             list_elements[child].find_element_by_css_selector('span[class=ng-binding]').click()
 
-
     # if this is the first contact, then check if the label was added
     # if it wasn't added then create a new label and then call the function again with the same contact info
     if first_contact:
@@ -191,19 +214,40 @@ def add_new_contact(driver, wait, contact_info, user_labels):
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
         wait.until(page_is_loaded)
 
+def assign_gender(driver, wait, contact_info):
+    # search for the person who was just added
+    try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[0] + " " + contact_info[1])
+    time.sleep(1.5)
+
+    gender = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person/div/div[2]/span')
+    if '-' in gender.text:
+        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person[1]/div/div[1]/div[2]/a')
+
+        # male 
+        if contact_info[3] == 'male':
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[1]/input')
+        
+        # female
+        elif contact_info[3] == 'female':
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[2]/input')
+        
+        # other
+        elif contact_info[3] == 'other':
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[3]/input')
+
+        # click the x
+        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/header/div[2]/div[1]/a')             
+
+
 def add_labels_to_mh(driver, wait, user_labels):
     # the OK btn
-    try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
+    try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]')
 
     # x at the top right
     try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/header/div[2]/div[1]/a')
 
     # ok btn on the are you sure page
     try_to_click(driver, '/html/body/div[1]/div/div/div/div[3]/button[2]')
-
-    # click on 'cru @ the university of texas'
-    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-people-dashboard/div/div[1]/organization/accordion/div[1]/accordion-header/div/div[1]/h2')
-    wait.until(page_is_loaded)
 
     # hover over the tools dropdown menu
     menu = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[7]/div')
@@ -222,9 +266,8 @@ def add_labels_to_mh(driver, wait, user_labels):
     # click the okay label
     try_to_click(driver, '/html/body/div[1]/div/div/edit-label/div[3]/button[2]')
 
-    # go back to the people tab
-    driver.get('https://campuscontacts.cru.org/people')
-    wait.until(page_is_loaded)
+    # go back to the contacts tab
+    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[4]')
 
 def try_to_click(driver, xpath):
     try:
@@ -252,6 +295,10 @@ def try_to_find_element(driver, xpath):
 
 def main():
     global first_contact
+
+    headless = is_headless()
+    chrome_options = Options()
+    chrome_options.headless = headless
     
     chromedriver = "supporting_files/chromedriver.exe"
     driver = webdriver.Chrome(chromedriver)
@@ -260,15 +307,20 @@ def main():
     link = 'https://campuscontacts.cru.org/sign-in'
 
     normalize_excel_sheet()
+    # contact list in the form [first, last, phone, gender]
     contact_list = get_contact_list()
     labels = find_labels()
     main_window = close_blank_page(driver, wait, link)
+
+    start = datetime.datetime.now()
     login_to_missionhub(driver, wait, main_window)
 
     for contact in contact_list:
         add_new_contact(driver, wait, contact, labels)
 
+    finish = datetime.datetime.now()
     print('all done :)')
+    print('Added', len(contact_list), 'contacts in', finish - start)
     time.sleep(5)
 
 

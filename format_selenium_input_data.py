@@ -30,7 +30,6 @@ def normalize_excel_sheet():
 
     # split full name into first and last
     row_count = ws.max_row
-    print('row count', row_count)
 
     for row in ws.iter_rows(min_row = 2, min_col = 1, max_col = 1, max_row = row_count):
         for cell in row:
@@ -154,7 +153,6 @@ def get_contact_list():
             if cell.column == 7 and single_contact_info != [None, None, None, None]:
                 all_contacts.append(single_contact_info)
             
-    print(all_contacts)
     return all_contacts
 
 def find_labels():
@@ -167,7 +165,6 @@ def find_labels():
     labels = [x.strip().lower() for x in labels]
 
     for x in labels:
-        print('x', x, 'labels', labels)
         for char in range(0,4):
             if x[char].isdigit():
                 continue
