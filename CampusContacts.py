@@ -151,8 +151,6 @@ def add_new_contact(driver, wait, contact_info, user_labels):
 
     textbox = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input')
     textbox.clear()
-
-    print(contact_info[0], contact_info[1], 'added successfully')
     
 def fill_in_contact(driver, wait, contact_info, user_labels):
     global first_contact
@@ -206,6 +204,7 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
             # save btn
             try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
             wait.until(page_is_loaded)
+            print(contact_info[0], contact_info[1], 'added successfully')
     else:
         # the OK btn
         try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
@@ -213,6 +212,7 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
         # save btn
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
         wait.until(page_is_loaded)
+        print(contact_info[0], contact_info[1], 'added successfully')
 
 def assign_gender(driver, wait, contact_info):
     # search for the person who was just added
