@@ -215,28 +215,46 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
         print(contact_info[0], contact_info[1], 'added successfully')
 
 def assign_gender(driver, wait, contact_info):
+    stop = False
+
     # search for the person who was just added
-    try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[0] + " " + contact_info[1])
+    if contact_info[1] != None:
+        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[0] + " " + contact_info[1])
+    else:
+        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[0])
     time.sleep(1.5)
 
-    gender = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person/div/div[2]/span')
-    if '-' in gender.text:
-        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person[1]/div/div[1]/div[2]/a')
+    # try to find the first label that pops up, if no labels popped up, then this contact may already be in missionhub under a different name
+    try:
+        gender = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person/div/div[2]/span')
+    except:
+        if contact_info[1] != None:
+            print('\n\n\n***** PROBLEM ADDING ' + contact_info[0] + ' ' + contact_info[1] + ' *****')
+        else:
+            print('*****PROBLEM ADDING ' + contact_info[0] +  ' *****')
+        print('This contact may already be in Campus Connects under a different name or misspelled\n\n\n')
 
-        # male 
-        if contact_info[3] == 'male':
-            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[1]/input')
-        
-        # female
-        elif contact_info[3] == 'female':
-            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[2]/input')
-        
-        # other
-        elif contact_info[3] == 'other':
-            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[3]/input')
+        # dont keep going
+        stop = True
 
-        # click the x
-        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/header/div[2]/div[1]/a')             
+    if not stop:
+        if '-' in gender.text:
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person[1]/div/div[1]/div[2]/a')
+
+            # male 
+            if contact_info[3] == 'male':
+                try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[1]/input')
+            
+            # female
+            elif contact_info[3] == 'female':
+                try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[2]/input')
+            
+            # other
+            elif contact_info[3] == 'other':
+                try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[3]/input')
+
+            # click the x
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/header/div[2]/div[1]/a')             
 
 
 def add_labels_to_mh(driver, wait, user_labels):
@@ -303,12 +321,13 @@ def main():
     chromedriver = "supporting_files/chromedriver.exe"
     driver = webdriver.Chrome(chromedriver)
     driver.implicitly_wait(10)
-    wait = ui.WebDriverWait(driver, 10)
+    wait = ui.WebDriverWait(driver, 5)
     link = 'https://campuscontacts.cru.org/sign-in'
 
     normalize_excel_sheet()
     # contact list in the form [first, last, phone, gender]
     contact_list = get_contact_list()
+    print('contact list', contact_list)
     labels = find_labels()
     main_window = close_blank_page(driver, wait, link)
 

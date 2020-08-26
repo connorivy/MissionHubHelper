@@ -25,24 +25,30 @@ def normalize_excel_sheet():
                    end_color='ffcccb',
                    fill_type='solid')
 
+    row_count = ws.max_row
     
-    # delete rows that don't have a phone number
-    for row in ws:
-        if not any(cell.value for cell in row):
-            # print('empty row', row[0].row)
-            ws.delete_rows(row[0].row, 1)
+    # format names split into first and last
+    for row in ws.iter_rows(min_row = 2, min_col = 4, max_col = 5, max_row = row_count):
+        for cell in row:
+            cell.fill = white
+            f_l_name = cell.value
+
+            if isinstance(f_l_name, str):
+                cell.value = f_l_name.strip()
 
     # split full name into first and last
-    row_count = ws.max_row
-
     for row in ws.iter_rows(min_row = 2, min_col = 1, max_col = 1, max_row = row_count):
         for cell in row:
             cell.fill = white
+            
             name = cell.value
-            try:
-                name.strip()
-            except:
+            if name == None:
                 continue
+
+            if isinstance(name, str):
+                name = name.strip()
+            else:
+                print('Problem handeling the name "', name, '"')
 
             spaces = 0
             for char in name:
@@ -84,12 +90,14 @@ def normalize_excel_sheet():
     # format phone numbers to exclude special characters
     for row in ws.iter_rows(min_row = 2, min_col = 2, max_col = 2, max_row = row_count):
         for cell in row:
+            cell.fill = white
             number = cell.value
-            try:
+
+            if isinstance(number, str):
                 number.strip()
-            except:
-                continue
-            
+            else:
+                number = str(number)
+
             # remove anything that isn't a number from the string
             formatted_num = ''
             for char in number:
@@ -109,8 +117,10 @@ def normalize_excel_sheet():
             else:
                 cell.offset(0,4).value = formatted_num
 
+    # format gender
     for row in ws.iter_rows(min_row = 2, min_col = 3, max_col = 3, max_row = row_count):
         for cell in row:
+            cell.fill = white
             gender = str(cell.value)
 
         if gender.lower() == 'male' or gender.lower() == 'm' or gender.lower() == 'boy' or gender.lower() == 'guy':
@@ -118,16 +128,6 @@ def normalize_excel_sheet():
 
         elif gender.lower() == 'female' or gender.lower() == 'f' or gender.lower() == 'girl' or gender.lower() == 'gal':
             cell.offset(0,4).value = 'female'
-
-        # # flag cells that don't have a gender in them
-        # elif cell.offset(0, -1).value != None and gender.lower() == 'none':
-        #     cell.fill = redFill
-        #     cell.offset(0,-1).fill = lightredFill
-        #     cell.offset(0,-2).fill = lightredFill
-        #     cell.offset(0,1).fill = lightredFill
-        #     cell.offset(0,2).fill = lightredFill
-        #     cell.offset(0,3).fill = lightredFill
-        #     cell.offset(0,4).fill = lightredFill
 
         elif cell.offset(0, -1).value == None and gender.lower() == 'none':
             continue
