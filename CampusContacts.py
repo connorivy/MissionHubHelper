@@ -68,8 +68,8 @@ def reset_login_info():
     while login_info[1].lower() != 'f' and login_info[1].lower() != 'e':
         login_info[1] = input('\nLogin via email or Facebook? [E/F]     ')
     
-    login_info[3] = input('Please input your username:     ')
-    login_info[5] = getpass('Please input your password:     ')
+    login_info[3] = input('Please input your login username:     ')
+    login_info[5] = getpass('Please input your login password:     ')
 
     file_info = ['','','']
     file_info[0] = "email or facebook:" + base64.b64encode(login_info[1].encode("utf-8")).decode("utf-8") + "\n"
