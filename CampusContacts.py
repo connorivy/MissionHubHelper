@@ -4,6 +4,7 @@ from format_selenium_input_data import find_labels
 import time
 import random
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -157,26 +158,26 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
     user_labels_copy = copy.copy(user_labels)
 
     # fill in first, last, and phone
-    if contact_info[0] != None:
-        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input', contact_info[0])
     if contact_info[1] != None:
-        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input', contact_info[1])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input', contact_info[1])
     if contact_info[2] != None:
-        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[5]/div/label/div[2]/input', contact_info[2])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input', contact_info[2])
+    if contact_info[3] != None:
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[5]/div/label/div[2]/input', contact_info[3])
 
     # click out of the name field
     try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]')
 
     # male 
-    if contact_info[3] == 'male':
+    if contact_info[4] == 'male':
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[1]/input')
     
     # female
-    elif contact_info[3] == 'female':
+    elif contact_info[4] == 'female':
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[2]/input')
     
     # other
-    elif contact_info[3] == 'other':
+    elif contact_info[4] == 'other':
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[3]/label[3]/input')
 
     # add label button
@@ -204,7 +205,7 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
             # save btn
             try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
             wait.until(page_is_loaded)
-            print(contact_info[0], contact_info[1], 'added successfully')
+            print(contact_info[1], contact_info[2], 'added successfully')
     else:
         # the OK btn
         try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
@@ -212,27 +213,27 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
         # save btn
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
         wait.until(page_is_loaded)
-        print(contact_info[0], contact_info[1], 'added successfully')
+        print(contact_info[1], contact_info[2], 'added successfully')
 
 def assign_gender(driver, wait, contact_info):
     stop = False
 
     # search for the person who was just added
-    if contact_info[1] != None:
-        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[0] + " " + contact_info[1])
+    if contact_info[2] != None:
+        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[1] + " " + contact_info[2])
     else:
-        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[0])
+        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[1])
     time.sleep(1.5)
 
     # try to find the first label that pops up, if no labels popped up, then this contact may already be in missionhub under a different name
     try:
         gender = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person/div/div[2]/span')
     except:
-        if contact_info[1] != None:
-            print('\n\n\n***** PROBLEM ADDING ' + contact_info[0] + ' ' + contact_info[1] + ' *****')
+        if contact_info[2] != None:
+            print('\n\n\n***** PROBLEM ADDING ' + contact_info[1] + ' ' + contact_info[2] + ' *****')
         else:
-            print('*****PROBLEM ADDING ' + contact_info[0] +  ' *****')
-        print('This contact may already be in Campus Connects under a different name or misspelled\n\n\n')
+            print('*****PROBLEM ADDING ' + contact_info[1] +  ' *****')
+        print('This contact may already be in Campus Connects under a different or missplled name\n\n\n')
 
         # dont keep going
         stop = True
@@ -242,15 +243,15 @@ def assign_gender(driver, wait, contact_info):
             try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person[1]/div/div[1]/div[2]/a')
 
             # male 
-            if contact_info[3] == 'male':
+            if contact_info[4] == 'male':
                 try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[1]/input')
             
             # female
-            elif contact_info[3] == 'female':
+            elif contact_info[4] == 'female':
                 try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[2]/input')
             
             # other
-            elif contact_info[3] == 'other':
+            elif contact_info[4] == 'other':
                 try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-profile/form/div[6]/div[3]/label[3]/input')
 
             # click the x
@@ -319,7 +320,8 @@ def main():
     chrome_options.headless = headless
     
     chromedriver = "supporting_files/chromedriver.exe"
-    driver = webdriver.Chrome(chromedriver)
+    # driver = webdriver.Chrome(chromedriver)
+    driver = webdriver.Chrome(ChromeDriverManager().install())
     driver.implicitly_wait(10)
     wait = ui.WebDriverWait(driver, 5)
     link = 'https://campuscontacts.cru.org/sign-in'
