@@ -163,9 +163,9 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
 
     # fill in first, last, and phone
     if contact_info[1] != None:
-        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input', contact_info[1])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[1]/label/input', contact_info[1].title())
     if contact_info[2] != None:
-        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input', contact_info[2])
+        try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[2]/label/input', contact_info[2].title())
     if contact_info[3] != None:
         try_to_send_keys(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[1]/person-profile/form/div[6]/div[5]/div/label/div[2]/input', contact_info[3])
 
@@ -209,7 +209,6 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
             # save btn
             try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
             wait.until(page_is_loaded)
-            print(contact_info[1], contact_info[2], 'added successfully')
     else:
         # the OK btn
         try_to_click(driver, '/html/body/div[1]/div/div/edit-group-or-label-assignments/div[3]/button[2]/span')
@@ -217,7 +216,6 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
         # save btn
         try_to_click(driver, '/html/body/div[1]/div/div/person-page/async-content/div/div[2]/button')
         wait.until(page_is_loaded)
-        print(contact_info[1], contact_info[2], 'added successfully')
 
 def assign_gender(driver, wait, contact_info):
     stop = False
@@ -310,7 +308,7 @@ def add_labels_to_mh(driver, wait, user_labels):
         try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-labels/div[1]/div[2]/icon-button/ng-md-icon')
 
         # type new label in box for each element left in user labels
-        try_to_send_keys(driver, '//*[@id="modal-body"]/div/label/input', x)
+        try_to_send_keys(driver, '//*[@id="modal-body"]/div/label/input', x.title())
 
         # click the okay label
         try_to_click(driver, '/html/body/div[1]/div/div/edit-label/div[3]/button[2]')
@@ -350,9 +348,7 @@ def main():
     chrome_options = Options()
     chrome_options.headless = headless
     
-    chromedriver = "supporting_files/chromedriver.exe"
-    # driver = webdriver.Chrome(chromedriver)
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+    driver = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=chrome_options)
     driver.implicitly_wait(10)
     wait = ui.WebDriverWait(driver, 5)
     link = 'https://campuscontacts.cru.org/sign-in'
@@ -360,15 +356,21 @@ def main():
     normalize_excel_sheet()
     # contact list in the form [notes, first, last, phone, gender, year]
     contact_list = get_contact_list()
-    print('contact list', contact_list)
+    # print('contact list', contact_list)
     labels = find_labels()
     main_window = close_blank_page(driver, wait, link)
 
     start = datetime.datetime.now()
     login_to_missionhub(driver, wait, main_window)
 
+    contact_counter = 0
     for contact in contact_list:
+        contact_counter += 1
         add_new_contact(driver, wait, contact, labels)
+        if headless:
+            print('\n\nContact', contact_counter, '/', len(contact_list), ',', contact[1], contact[2], ', added successfully\n\n')
+        else:
+            print('Contact', contact_counter, '/', len(contact_list), ',', contact[1], contact[2], ', added successfully')
 
     finish = datetime.datetime.now()
     print('all done :)')

@@ -173,7 +173,7 @@ def normalize_excel_sheet():
                         freshman_year = int(input('What year will these freshmen graduate?      '))
                     except:
                         continue
-            print('year', year)
+
             if year.lower() == 'first' or year.lower() == 'f' or 'fr' in year.lower() or year.lower() == '1st' or year.lower() == '1':
                 cell.offset(0,col_num_year_formatted - col_num_year).value = str(freshman_year)
             elif year.lower() == 'second' or 'so' in year.lower() or year.lower() == '2nd' or year.lower() == '2':
