@@ -142,6 +142,10 @@ def login_to_missionhub(driver, wait, main):
 def add_new_contact(driver, wait, contact_info, user_labels):
     global first_contact
     
+    # add the year to the contact's labels
+    if contact_info[5] != None:
+        user_labels.append(contact_info[5])
+
     # add person btn
     try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[1]/div/div[1]/div[2]/icon-button')
     wait.until(page_is_loaded)
@@ -218,14 +222,15 @@ def fill_in_contact(driver, wait, contact_info, user_labels):
 def assign_gender(driver, wait, contact_info):
     stop = False
 
-    # search for the person who was just added
-    if contact_info[2] != None:
-        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[1] + " " + contact_info[2])
-    else:
-        try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[1])
+    # # search for the person who was just added
+    # if contact_info[2] != None:
+    #     try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[1] + " " + contact_info[2])
+    # else:
+    #     try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[1])
+    try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[1]/people-filters-panel/div/div[1]/input', contact_info[3])
     time.sleep(1.5)
 
-    # try to find the first label that pops up, if no labels popped up, then this contact may already be in missionhub under a different name
+    # try to find the first label that pops up, if no labels popped up
     try:
         gender = try_to_find_element(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person/div/div[2]/span')
     except:
@@ -233,7 +238,6 @@ def assign_gender(driver, wait, contact_info):
             print('\n\n\n***** PROBLEM ADDING ' + contact_info[1] + ' ' + contact_info[2] + ' *****')
         else:
             print('*****PROBLEM ADDING ' + contact_info[1] +  ' *****')
-        print('This contact may already be in Campus Connects under a different or missplled name\n\n\n')
 
         # dont keep going
         stop = True
@@ -256,7 +260,32 @@ def assign_gender(driver, wait, contact_info):
 
             # click the x
             try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/header/div[2]/div[1]/a')             
+        
+        if contact_info[0] != None:
+            # click the person
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/div[2]/div[2]/div/ministry-view-person[1]/div/div[1]/div[2]/a')
 
+            # history
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/header/div[2]/div[3]/div[2]')
+
+            # notes
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-history/async-content/div/div[1]/span[3]')
+
+            # add note
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-history/async-content/div/div[2]/div[3]/ng-md-icon')
+
+            #comment only
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-history/async-content/div/div[2]/div[2]/div/div[1]')
+
+            # write comment
+            try_to_send_keys(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-history/async-content/div/div[2]/form/div/textarea', contact_info[0])
+
+            # check mark
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/div/person-history/async-content/div/div[2]/form/button/ng-md-icon')
+
+            # click the x
+            try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-people/people-screen/div/div[2]/div/ui-view/person-page/async-content/div/header/div[2]/div[1]/a')             
+        
 
 def add_labels_to_mh(driver, wait, user_labels):
     # the OK btn
@@ -275,15 +304,17 @@ def add_labels_to_mh(driver, wait, user_labels):
     # click on 'manage labels'
     try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[7]/div/ul/li[3]/a')
     
-    # click the plus btn to add label
-    try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-labels/div[1]/div[2]/icon-button/ng-md-icon')
-
-    # type new label in box for each element left in user labels
+    
     for x in user_labels:
+        # click the plus btn to add label
+        try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[3]/ui-view/organization-overview-labels/div[1]/div[2]/icon-button/ng-md-icon')
+
+        # type new label in box for each element left in user labels
         try_to_send_keys(driver, '//*[@id="modal-body"]/div/label/input', x)
 
-    # click the okay label
-    try_to_click(driver, '/html/body/div[1]/div/div/edit-label/div[3]/button[2]')
+        # click the okay label
+        try_to_click(driver, '/html/body/div[1]/div/div/edit-label/div[3]/button[2]')
+
 
     # go back to the contacts tab
     try_to_click(driver, '/html/body/ui-view/app/section/ui-view/my-organizations-dashboard/div/ui-view/organization-overview/async-content/div/div/div[2]/div[4]')
@@ -327,7 +358,7 @@ def main():
     link = 'https://campuscontacts.cru.org/sign-in'
 
     normalize_excel_sheet()
-    # contact list in the form [first, last, phone, gender]
+    # contact list in the form [notes, first, last, phone, gender, year]
     contact_list = get_contact_list()
     print('contact list', contact_list)
     labels = find_labels()

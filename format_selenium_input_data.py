@@ -12,7 +12,7 @@ def normalize_excel_sheet():
     global col_num_min_formatted
     global col_num_max
     # Give the location of the file 
-    loc = ("./supporting_files/contacts1.xlsx") 
+    loc = ("./supporting_files/contacts.xlsx") 
 
     # To open Workbook 
     wb = load_workbook(filename = loc)
@@ -215,7 +215,7 @@ def get_contact_list():
                 print('***** Problem adding row number', counter, '*****')
                 break
             single_contact_info.append(cell.value)
-            if cell.column == col_num_max and single_contact_info != [None, None, None, None]:
+            if cell.column == col_num_max and single_contact_info != [None, None, None, None, None, None]:
                 all_contacts.append(single_contact_info)
             
     return all_contacts
